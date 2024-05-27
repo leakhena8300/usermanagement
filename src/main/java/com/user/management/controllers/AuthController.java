@@ -14,18 +14,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -126,4 +131,28 @@ public class AuthController {
 
     return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
   }
+  
+  @PostMapping("/validatetoken")
+  public ResponseEntity<List<String>> validateToken(@RequestHeader("Authorization") String token, HttpServletRequest request) {
+	    try {
+	        // Get authenticated user details
+	        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	        
+	        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal() == null) {
+	            throw new Exception("User is not authenticated");
+	        }
+	        
+	        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+	        // Retrieve user roles
+	        List<String> userRoles = userDetails.getAuthorities().stream()
+	                .map(GrantedAuthority::getAuthority)
+	                .collect(Collectors.toList());
+
+	        return ResponseEntity.ok(userRoles);
+	    } catch (Exception e) {
+	    	 return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
+                     .body(null); // Return null or an empty list if an error occurs
+	    } 
+	}
 }
