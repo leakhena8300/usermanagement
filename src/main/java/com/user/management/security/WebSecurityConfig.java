@@ -82,7 +82,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
           auth.requestMatchers("/api/auth/signup").permitAll()
               .requestMatchers("/api/auth/**").permitAll()
               .requestMatchers("/api/**").permitAll()
-              .requestMatchers("/api/content/**").permitAll()
+              .requestMatchers("/api/resource/content/**").permitAll()
              
               .anyRequest().authenticated() // Require authentication for all other requests
         );
